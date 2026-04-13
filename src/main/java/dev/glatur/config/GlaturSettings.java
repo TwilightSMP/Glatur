@@ -6,8 +6,7 @@ import net.minecraft.util.WorldSavePath;
 import java.nio.file.Path;
 
 public final class GlaturSettings {
-    // TODO: Confirm whether this command permission level should be different.
-    public static final int COMMAND_PERMISSION_LEVEL = 2;
+    public static final int COMMAND_PERMISSION_LEVEL = 4;
 
     private static final String MOD_DATA_DIRECTORY = "glatur";
     private static final String STORAGE_FILE_NAME = "invins.json";

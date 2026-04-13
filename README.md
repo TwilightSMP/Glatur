@@ -6,15 +6,9 @@ Server-side Fabric mod that adds an `/invins` list. Players in that list cannot 
 
 - Mod id: `glatur`
 - Name: `Glatur`
-- Baseline Minecraft target in this scaffold: `1.20.1`
+- Baseline Minecraft target in this scaffold: `1.21.11`
 - Persistence method: JSON file at `<world>/data/glatur/invins.json`
-- Command permission level: `2` (operator level)
-
-## TODOs Requiring Confirmation
-
-- Confirm exact Minecraft target version for your deployment.
-- Confirm whether permission level `2` is correct for your server policy.
-- Confirm whether world-local JSON storage is preferred long-term.
+- Command permission level: `4` (highest operator level)
 
 ## Command Usage
 
@@ -27,6 +21,7 @@ Server-side Fabric mod that adds an `/invins` list. Players in that list cannot 
 - Uses UUIDs only for storage and checks.
 - Death for tracked players is cancelled server-side.
 - Tracked players are clamped to exactly `1.0F` HP on server ticks.
+- Players can be removed from the JSON-backed list with `/invins remove <player>`.
 - `/kill` and void-like lethal flows are handled via death cancellation; tracked players remain alive at 1 HP.
 
 ## Build
