@@ -1,0 +1,58 @@
+name: Validate Metadata
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-metadata-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate project versions and settings
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mod_version="$(grep -E '^mod_version=' gradle.properties | cut -d '=' -f2)"
+          mc_version="$(grep -E '^minecraft_version=' gradle.properties | cut -d '=' -f2)"
+
+          mod_json_mc="$(grep -E '"minecraft": "~[0-9]+\.[0-9]+\.[0-9]+"' src/main/resources/fabric.mod.json | sed -E 's/.*"minecraft": "~([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')"
+          readme_mc="$(grep -E 'Baseline Minecraft target in this scaffold: `[^`]+`' README.md | sed -E 's/.*`([^`]+)`.*/\1/')"
+          permission_level="$(grep -E 'COMMAND_PERMISSION_LEVEL = [0-9]+' src/main/java/dev/glatur/config/GlaturSettings.java | sed -E 's/.*= ([0-9]+).*/\1/')"
+
+          if [[ "$mc_version" != "$mod_json_mc" ]]; then
+            echo "minecraft_version mismatch between gradle.properties ($mc_version) and fabric.mod.json ($mod_json_mc)"
+            exit 1
+          fi
+
+          if [[ "$mc_version" != "$readme_mc" ]]; then
+            echo "minecraft_version mismatch between gradle.properties ($mc_version) and README ($readme_mc)"
+            exit 1
+          fi
+
+          if [[ "$permission_level" != "4" ]]; then
+            echo "Expected COMMAND_PERMISSION_LEVEL to be 4, found $permission_level"
+            exit 1
+          fi
+
+          if ! grep -q 'Persistence method: JSON file' README.md; then
+            echo "README no longer documents JSON persistence"
+            exit 1
+          fi
+
+          echo "Metadata validation passed for Glatur v$mod_version on MC $mc_version"

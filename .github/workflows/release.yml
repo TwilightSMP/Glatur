@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*-mc*'
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -14,6 +15,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
 
     steps:
       - name: Checkout
@@ -27,6 +32,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
 
       - name: Recognize and validate release version
         id: version
