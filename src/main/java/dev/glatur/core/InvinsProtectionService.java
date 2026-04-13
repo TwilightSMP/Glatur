@@ -27,7 +27,7 @@ public final class InvinsProtectionService {
         }
 
         player.setHealth(MINIMUM_HEALTH);
-        logger.info("Prevented death for tracked /invins player {}", player.getGameProfile().getName());
+        logger.info("Prevented death for tracked /invins player {}", player.getName().getString());
         return false;
     }
 

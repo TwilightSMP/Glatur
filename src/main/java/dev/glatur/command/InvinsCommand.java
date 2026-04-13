@@ -1,10 +1,11 @@
 package dev.glatur.command;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import dev.glatur.config.GlaturSettings;
 import dev.glatur.core.InvinsManager;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.permission.Permission;
+import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -12,11 +13,13 @@ import net.minecraft.text.Text;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 public final class InvinsCommand {
+        private static final Permission.Level REQUIRED_PERMISSION =
+                        new Permission.Level(PermissionLevel.fromLevel(GlaturSettings.COMMAND_PERMISSION_LEVEL));
+
     private InvinsCommand() {
     }
 
@@ -28,7 +31,7 @@ public final class InvinsCommand {
     ) {
         dispatcher.register(
                 CommandManager.literal("invins")
-                        .requires(source -> source.hasPermissionLevel(GlaturSettings.COMMAND_PERMISSION_LEVEL))
+                        .requires(source -> source.getPermissions().hasPermission(REQUIRED_PERMISSION))
                         .then(CommandManager.literal("add")
                                 .then(CommandManager.argument("player", EntityArgumentType.player())
                                         .executes(context -> addPlayer(
@@ -67,7 +70,7 @@ public final class InvinsCommand {
         }
 
         saveCallback.run();
-        logger.info("{} added {} ({}) to /invins", source.getName(), player.getGameProfile().getName(), playerUuid);
+                logger.info("{} added {} ({}) to /invins", source.getName(), player.getName().getString(), playerUuid);
         source.sendFeedback(() -> Text.literal("Added " + player.getName().getString() + " to /invins list."), true);
         return 1;
     }
@@ -86,7 +89,7 @@ public final class InvinsCommand {
         }
 
         saveCallback.run();
-        logger.info("{} removed {} ({}) from /invins", source.getName(), player.getGameProfile().getName(), playerUuid);
+                logger.info("{} removed {} ({}) from /invins", source.getName(), player.getName().getString(), playerUuid);
         source.sendFeedback(() -> Text.literal("Removed " + player.getName().getString() + " from /invins list."), true);
         return 1;
     }
@@ -111,9 +114,9 @@ public final class InvinsCommand {
     }
 
     private static String formatEntry(ServerCommandSource source, UUID playerUuid) {
-        Optional<GameProfile> profile = source.getServer().getUserCache().getByUuid(playerUuid);
-        if (profile.isPresent()) {
-            return profile.get().getName() + " [" + playerUuid + "]";
+                ServerPlayerEntity onlinePlayer = source.getServer().getPlayerManager().getPlayer(playerUuid);
+                if (onlinePlayer != null) {
+                        return onlinePlayer.getName().getString() + " [" + playerUuid + "]";
         }
 
         return playerUuid.toString();
