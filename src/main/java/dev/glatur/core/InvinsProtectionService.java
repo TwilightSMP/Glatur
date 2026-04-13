@@ -2,6 +2,7 @@ package dev.glatur.core;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.slf4j.Logger;
@@ -26,9 +27,19 @@ public final class InvinsProtectionService {
             return true;
         }
 
+        // Let vanilla handle lethal hits if a totem is available so the totem can pop normally.
+        if (hasTotemOfUndying(player)) {
+            return true;
+        }
+
         player.setHealth(MINIMUM_HEALTH);
         logger.info("Prevented death for tracked /invins player {}", player.getName().getString());
         return false;
+    }
+
+    private boolean hasTotemOfUndying(ServerPlayerEntity player) {
+        return player.getMainHandStack().isOf(Items.TOTEM_OF_UNDYING)
+                || player.getOffHandStack().isOf(Items.TOTEM_OF_UNDYING);
     }
 
     public void enforceHealthClamp(MinecraftServer server) {
